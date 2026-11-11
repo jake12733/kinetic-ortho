@@ -122,6 +122,27 @@ header{position:sticky;top:0;z-index:60;background:rgba(239,236,230,.88);backdro
 .jt.on circle.p{animation:ring 1.6s infinite}
 @keyframes ring{0%{r:10;opacity:.9}100%{r:26;opacity:0}}
 .jt:focus{outline:none}.jt:focus-visible circle.n{stroke:var(--sig);stroke-width:5}
+.stage3d{position:relative;width:100%;height:600px}
+#body3d{width:100%;height:100%;display:block;cursor:grab}
+#body3d:active{cursor:grabbing}
+.hots{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hs{position:absolute;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:auto;border-radius:50%;display:grid;place-items:center;will-change:transform}
+.hs i{width:15px;height:15px;border-radius:50%;background:#fff;border:2.5px solid var(--ink);transition:transform .2s,background .2s;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.hs:hover i{background:var(--sig2);transform:scale(1.2)}
+.hs.on i{background:var(--sig);transform:scale(1.25)}
+.hs.on::before{content:"";position:absolute;inset:3px;border-radius:50%;border:2px solid var(--sig);animation:hsr 1.6s infinite}
+@keyframes hsr{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.7);opacity:0}}
+.hs b{position:absolute;left:30px;white-space:nowrap;background:var(--ink);color:var(--bone);font-size:12.5px;font-weight:700;padding:3px 8px;opacity:0;transform:translateX(-4px);transition:.2s;pointer-events:none}
+.hs.l b{left:auto;right:30px;transform:translateX(4px)}
+.hs:hover b,.hs.on b{opacity:1;transform:none}
+.hs b{visibility:hidden}.hs.l b,.hs.solo b{visibility:visible}
+.hs.back{opacity:.18;pointer-events:none}
+.hs.back b{display:none}
+.hs{transition:opacity .25s}
+.badge3d{position:absolute;top:0;left:0;font-family:var(--mono);font-size:12px;letter-spacing:.06em;background:var(--ink);color:var(--bone);padding:5px 10px}
+.loading3d{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:13px;color:var(--grey);transition:opacity .4s}
+.loading3d.hide{opacity:0;pointer-events:none}
+.stage3d.fail{display:none}
 .fig-hint{font-family:var(--mono);font-size:12.5px;color:var(--grey);margin-top:6px;text-align:center}
 .parts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:16px}
 .parts button{border:1.5px solid var(--ink);padding:6px 12px;font-size:14px;font-weight:600;background:var(--paper)}
@@ -378,6 +399,7 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
   .stats{grid-template-columns:1fr 1fr}.stats div:nth-child(3){border-left:0}.stats div:nth-child(n+3){border-top:1.5px solid var(--ink)}
   .stats div{padding:16px}
   .panel{padding:28px 20px}
+  .stage3d{height:500px}
   .pgrid{grid-template-columns:1fr}
   .pblock:nth-child(odd){padding-right:0}.pblock:nth-child(even){padding-left:0;border-left:0}
   .pr{grid-template-columns:60px 1fr;padding:26px 20px}
@@ -459,7 +481,7 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
         </div>
       </div>
       <div class="hero-card rv">
-        <img src="img/hero.jpg" alt="도로를 달리는 사람의 다리" class="gray">
+        <img src="img/hero.jpg" alt="숲길을 달리는 남성" class="gray">
         <span class="corner">RANGE OF MOTION · LIVE</span>
         <svg class="rom" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <circle cx="250" cy="250" r="92" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-dasharray="3 6"/>
@@ -503,7 +525,13 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
     </div>
     <div class="map-grid rv">
       <div class="figure">
-        <svg viewBox="0 0 300 530" role="group" aria-label="관절 선택 인체도">
+        <div class="stage3d" id="stage3d">
+          <canvas id="body3d" aria-label="돌려 볼 수 있는 3D 인체 모델"></canvas>
+          <div class="hots" id="hots"></div>
+          <span class="badge3d">3D · DRAG TO ROTATE</span>
+          <div class="loading3d" id="load3d"><span>3D 모델 불러오는 중 <b id="loadPct">0%</b></span></div>
+        </div>
+        <svg id="fallbackSvg" style="display:none" viewBox="0 0 300 530" role="group" aria-label="관절 선택 인체도">
           <circle cx="150" cy="48" r="30" class="bone" style="stroke-width:6"/>
           <path class="bone" d="M150 80 V250"/>
           <path class="bone thin" d="M132 130 Q150 138 168 130 M128 152 Q150 162 172 152 M130 174 Q150 184 170 174"/>
@@ -518,7 +546,7 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
           <path class="bone" d="M112 470 L84 486 M188 470 L216 486"/>
           <g id="joints"></g>
         </svg>
-        <div class="fig-hint">● 관절을 눌러 보세요</div>
+        <div class="fig-hint">● 관절을 누르거나, 좌우로 끌어서 돌려 보세요</div>
         <div class="parts" id="partBtns"></div>
       </div>
       <div class="panel" id="panel" aria-live="polite"></div>
@@ -537,7 +565,7 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
     </div>
     <div class="prin rv">
       <div class="prin-img">
-        <img src="img/consult.jpg" alt="의사가 환자에게 영상 검사 결과를 설명하는 모습" class="gray">
+        <img src="img/consult.jpg" alt="의사가 환자와 상담하는 모습" class="gray">
         <span class="cap">영상을 함께 보며 설명합니다</span>
       </div>
       <div class="prin-list">
@@ -562,13 +590,13 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
     <div class="prog rv" id="prog">
       <div class="row" data-img="img/shock.jpg"><span class="n">T—01</span><div><h3>체외충격파</h3></div><span class="en">ESWT</span><p>힘줄과 근막의 만성 통증 부위에 충격파를 전달해 회복을 돕습니다. 석회성 건염, 족저근막염 등에 쓰입니다.</p><span class="go">→</span><div class="thumb"><img src="img/shock.jpg" alt="" class="gray" loading="lazy"></div></div>
       <div class="row" data-img="img/manual.jpg"><span class="n">T—02</span><div><h3>도수치료</h3></div><span class="en">Manual Therapy</span><p>치료사가 손으로 관절과 근육의 긴장을 풀고 정렬을 바로잡습니다. 목·허리 통증과 자세 불균형에 적용합니다.</p><span class="go">→</span><div class="thumb"><img src="img/manual.jpg" alt="" class="gray" loading="lazy"></div></div>
-      <div class="row" data-img="img/tape.jpg"><span class="n">T—03</span><div><h3>초음파 유도 주사</h3></div><span class="en">US-Guided Injection</span><p>초음파로 바늘 위치를 실시간 확인하며 통증 부위에 정확하게 주사합니다. 어깨, 무릎, 손목 질환에 쓰입니다.</p><span class="go">→</span><div class="thumb"><img src="img/tape.jpg" alt="" class="gray" loading="lazy"></div></div>
+      <div class="row" data-img="img/imaging.jpg"><span class="n">T—03</span><div><h3>초음파 유도 주사</h3></div><span class="en">US-Guided Injection</span><p>초음파로 바늘 위치를 실시간 확인하며 통증 부위에 정확하게 주사합니다. 어깨, 무릎, 손목 질환에 쓰입니다.</p><span class="go">→</span><div class="thumb"><img src="img/imaging.jpg" alt="" class="gray" loading="lazy"></div></div>
       <div class="row" data-img="img/rehab.jpg"><span class="n">T—04</span><div><h3>운동재활</h3></div><span class="en">Exercise Rehab</span><p>전담 치료사와 1:1로 근력, 균형, 관절 가동 범위를 회복합니다. 수술 후 재활과 스포츠 복귀 프로그램을 포함합니다.</p><span class="go">→</span><div class="thumb"><img src="img/rehab.jpg" alt="" class="gray" loading="lazy"></div></div>
-      <div class="row" data-img="img/knee.jpg"><span class="n">T—05</span><div><h3>테이핑 · 보조기</h3></div><span class="en">Taping &amp; Brace</span><p>손상 부위를 보호하고 일상 동작을 편하게 합니다. 발 모양에 맞춘 깔창과 관절 보조기를 상담합니다.</p><span class="go">→</span><div class="thumb"><img src="img/knee.jpg" alt="" class="gray" loading="lazy"></div></div>
+      <div class="row" data-img="img/tape.jpg"><span class="n">T—05</span><div><h3>테이핑 · 보조기</h3></div><span class="en">Taping &amp; Brace</span><p>손상 부위를 보호하고 일상 동작을 편하게 합니다. 발 모양에 맞춘 깔창과 관절 보조기를 상담합니다.</p><span class="go">→</span><div class="thumb"><img src="img/tape.jpg" alt="" class="gray" loading="lazy"></div></div>
       <div class="row" data-img="img/xray.jpg"><span class="n">T—06</span><div><h3>골다공증 검사 · 관리</h3></div><span class="en">Bone Density Care</span><p>골밀도 검사로 뼈 건강을 확인하고, 결과에 따라 약물과 생활 관리 계획을 함께 세웁니다.</p><span class="go">→</span><div class="thumb"><img src="img/xray.jpg" alt="" class="gray" loading="lazy"></div></div>
     </div>
   </div>
-  <div class="peek" id="peek"><img src="" alt="" class="gray"></div>
+  <div class="peek" id="peek"><img alt="" class="gray"></div>
 </section>
 
 <!-- STEPS -->
@@ -625,7 +653,7 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
       <div><h2 class="h2">진단부터 재활까지<br><span class="o">한 층</span>에서</h2></div>
     </div>
     <div class="space rv">
-      <div class="sp a"><img src="img/rehab.jpg" alt="운동재활 공간" class="gray" loading="lazy"><span class="lb">01 / 운동재활실</span></div>
+      <div class="sp a"><img src="img/room1.jpg" alt="치료사가 환자의 다리를 치료하는 모습" class="gray" loading="lazy"><span class="lb">01 / 도수 · 재활 치료실</span></div>
       <div class="sp b"><img src="img/hall.jpg" alt="복도와 대기 공간" class="gray" loading="lazy"><span class="lb">02 / 대기 공간</span></div>
       <div class="sp c"><img src="img/room.jpg" alt="치료실" class="gray" loading="lazy"><span class="lb">03 / 1인 치료실</span></div>
       <div class="sp d"><img src="img/kneemodel.jpg" alt="무릎 관절 모형" class="gray" loading="lazy"><span class="lb">04 / 상담실</span></div>
@@ -839,6 +867,7 @@ PARTS.forEach(p=>{
 function pick(k){
   cur=k;const p=PARTS.find(x=>x.k===k),i=PARTS.indexOf(p);
   jg.querySelectorAll('.jt').forEach(g=>g.classList.toggle('on',g.dataset.k===k));
+  document.querySelectorAll('.hs').forEach(h=>h.classList.toggle('on',h.dataset.k===k));
   pb.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
   panel.innerHTML=`<div class="fade" style="display:flex;flex-direction:column;height:100%">
    <div class="pn"><h3><small>${p.en}</small>${p.n}</h3><span class="count">0${i+1}</span></div>
@@ -852,6 +881,7 @@ function pick(k){
   document.getElementById('toBook').onclick=()=>{bk.part=p.k;renderParts();go(1)};
 }
 pick('knee');
+window.KN={PARTS,pick,cur:()=>cur};
 
 /* ---------- program peek ---------- */
 (()=>{const peek=document.getElementById('peek'),im=peek.querySelector('img');
@@ -930,6 +960,82 @@ renderParts();upd();
 
 /* ---------- faq ---------- */
 document.querySelectorAll('.qa').forEach(q=>{const b=q.querySelector('button'),a=q.querySelector('.a');b.onclick=()=>{const o=q.classList.toggle('open');a.style.maxHeight=o?a.scrollHeight+'px':0}});
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+/* ---------- 3D body map ---------- */
+const stage=document.getElementById('stage3d'),canvas=document.getElementById('body3d'),hots=document.getElementById('hots'),load=document.getElementById('load3d');
+function fail(e){console.warn('3D fallback',e);stage.classList.add('fail');document.getElementById('fallbackSvg').style.display='block'}
+try{
+  const THREE=await import('three');
+  const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
+  const {OrbitControls}=await import('three/addons/controls/OrbitControls.js');
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(28,1,.1,50);
+  camera.position.set(0,1.0,4.9);
+  const controls=new OrbitControls(camera,canvas);
+  controls.target.set(0,.9,0);controls.enableZoom=false;controls.enablePan=false;controls.enableDamping=true;controls.dampingFactor=.08;controls.rotateSpeed=.7;
+  controls.minPolarAngle=controls.maxPolarAngle=Math.PI/2-.06;
+  controls.minAzimuthAngle=-.8;controls.maxAzimuthAngle=.8;
+  canvas.style.touchAction='pan-y';
+  scene.add(new THREE.HemisphereLight(0xffffff,0xcfc8ba,1.5));
+  const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(1.4,5,2.6);key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+  Object.assign(key.shadow.camera,{left:-1.5,right:1.5,top:2.2,bottom:-.5,near:.5,far:12});key.shadow.bias=-.0005;scene.add(key);
+  const rim=new THREE.DirectionalLight(0xff9a78,1.6);rim.position.set(-3,2.5,-2.5);scene.add(rim);
+  const fill=new THREE.DirectionalLight(0xffffff,.6);fill.position.set(-3,1,3);scene.add(fill);
+  const ground=new THREE.Mesh(new THREE.CircleGeometry(1.1,64),new THREE.ShadowMaterial({opacity:.22}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.58,.6,96),new THREE.MeshBasicMaterial({color:0x0e0e0e,transparent:true,opacity:.55}));ring.rotation.x=-Math.PI/2;ring.position.y=.002;scene.add(ring);
+  const ring2=new THREE.Mesh(new THREE.RingGeometry(.66,.67,96,1,0,Math.PI*.5),new THREE.MeshBasicMaterial({color:0xff4f1f}));ring2.rotation.x=-Math.PI/2;ring2.position.y=.003;scene.add(ring2);
+  const pivot=new THREE.Group();scene.add(pivot);
+  const BONES={neck:['Neck'],shoulder:['RightArm','LeftArm'],elbow:['RightForeArm','LeftForeArm'],wrist:['RightHand','LeftHand'],back:['Spine'],hip:['RightUpLeg','LeftUpLeg'],knee:['RightLeg','LeftLeg'],ankle:['RightFoot','LeftFoot']};
+  const marks=[];let mixer;
+  const gltf=await new Promise((res,rej)=>new GLTFLoader().load('models/body.glb',res,x=>{if(x.total)document.getElementById('loadPct').textContent=Math.round(x.loaded/x.total*100)+'%'},rej));
+  const model=gltf.scene;model.rotation.y=Math.PI;pivot.add(model);
+  model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false;
+    const joint=/Joint/i.test(o.material.name);
+    o.material=new THREE.MeshStandardMaterial(joint?{color:0x2b2a27,roughness:.4,metalness:.1}:{color:0xece6db,roughness:.5,metalness:0});}});
+  mixer=new THREE.AnimationMixer(model);
+  const idle=THREE.AnimationClip.findByName(gltf.animations,'idle');if(idle)mixer.clipAction(idle).play();
+  const glowMat=new THREE.MeshBasicMaterial({color:0xff4f1f,transparent:true,opacity:.38,depthTest:false});
+  const name=n=>model.getObjectByName('mixamorig'+n)||model.getObjectByName('mixamorig:'+n);
+  window.KN.PARTS.forEach(p=>{(BONES[p.k]||[]).forEach((bn,i)=>{const bone=name(bn);if(!bone)return;
+    const b=document.createElement('button');b.className='hs'+(BONES[p.k].length===1?' solo':'');b.dataset.k=p.k;b.setAttribute('aria-label',p.n);
+    b.innerHTML='<i></i><b>'+p.n+'</b>';b.onclick=()=>window.KN.pick(p.k);hots.appendChild(b);
+    const glow=new THREE.Mesh(new THREE.SphereGeometry(p.k==='back'?.11:.075,24,16),glowMat);glow.renderOrder=10;glow.visible=false;scene.add(glow);
+    marks.push({k:p.k,bone,el:b,glow});});});
+  window.KN.pick(window.KN.cur());
+  load.classList.add('hide');
+  let w=1,h=1;const v=new THREE.Vector3(),cen=new THREE.Vector3();
+  function size(){w=stage.clientWidth;h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;
+    camera.fov=w<560?23:28;camera.updateProjectionMatrix()}
+  new ResizeObserver(size).observe(stage);size();
+  let last=performance.now(),idleSince=0,visible=true,t0=0;
+  controls.addEventListener('start',()=>idleSince=Infinity);controls.addEventListener('end',()=>idleSince=performance.now());
+  new IntersectionObserver(es=>visible=es[0].isIntersecting).observe(stage);
+  const clock=new THREE.Clock();
+  renderer.setAnimationLoop(()=>{
+    const dt=clock.getDelta();if(!visible)return;
+    mixer.update(dt);t0+=dt;
+    const free=performance.now()-idleSince>3500;
+    pivot.rotation.y+=((free?Math.sin(t0*.35)*.32:pivot.rotation.y)-pivot.rotation.y)*.03;
+    if(performance.now()-idleSince>1800){const az=controls.getAzimuthalAngle();if(Math.abs(az)>.002){const r=camera.position.distanceTo(controls.target),pol=controls.getPolarAngle(),na=az*.94;
+      camera.position.set(controls.target.x+r*Math.sin(pol)*Math.sin(na),controls.target.y+r*Math.cos(pol),controls.target.z+r*Math.sin(pol)*Math.cos(na));}}
+    ring2.rotation.z+=dt*.4;
+    controls.update();
+    scene.updateMatrixWorld();
+    const cur=window.KN.cur(),pulse=1+Math.sin(t0*4)*.12;
+    marks.forEach(m=>{v.setFromMatrixPosition(m.bone.matrixWorld);
+      cen.set(0,v.y,0);const back=camera.position.distanceTo(v)>camera.position.distanceTo(cen)+.11;m.el.classList.toggle('back',back);
+      const on=m.k===cur;m.glow.visible=on;if(on){m.glow.position.copy(v);m.glow.scale.setScalar(pulse)}
+      v.project(camera);const px=(v.x+1)/2*w;m.el.classList.toggle('l',px<w/2);m.el.style.transform=`translate(${px.toFixed(1)}px,${((1-v.y)/2*h).toFixed(1)}px)`;});
+    renderer.render(scene,camera);
+  });
+}catch(e){fail(e)}
 </script>
 </body>
 </html>
