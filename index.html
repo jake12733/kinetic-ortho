@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- KINETIC v2 · 3D body map -->
+<!-- KINETIC v3 · 3D body map -->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -85,7 +85,7 @@ header{position:sticky;top:0;z-index:60;background:rgba(239,236,230,.88);backdro
 .hero .sub{font-size:18px;color:var(--ink2);max-width:540px}
 .hero .ctas{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
 .hero-card{position:relative;border:1.5px solid var(--ink);background:var(--ink);aspect-ratio:4/5;overflow:hidden}
-.hero-card img{width:100%;height:100%;object-fit:cover;object-position:60% 50%;opacity:.92}
+.hero-card img{width:100%;height:100%;object-fit:cover;object-position:46% 50%;opacity:.92}
 .rom{position:absolute;inset:0;pointer-events:none}
 .readout{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr;background:var(--bone);border-top:1.5px solid var(--ink)}
 .readout div{padding:14px 18px}
@@ -485,11 +485,11 @@ footer{margin-top:110px;background:var(--ink);color:var(--bone);padding:70px 0 3
         <img src="img/hero.jpg" alt="숲길을 달리는 남성" class="gray">
         <span class="corner">RANGE OF MOTION · LIVE</span>
         <svg class="rom" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <circle cx="250" cy="250" r="92" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-dasharray="3 6"/>
+          <circle cx="328" cy="190" r="52" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-dasharray="3 6"/>
           <path id="romArc" d="" fill="none" stroke="#ff4f1f" stroke-width="5" stroke-linecap="square"/>
-          <line id="romLine" x1="250" y1="250" x2="250" y2="158" stroke="#ff4f1f" stroke-width="2.5"/>
-          <line x1="250" y1="250" x2="250" y2="342" stroke="#fff" stroke-width="2.5"/>
-          <circle cx="250" cy="250" r="7" fill="#ff4f1f" stroke="#fff" stroke-width="2"/>
+          <line id="romLine" x1="328" y1="190" x2="328" y2="138" stroke="#ff4f1f" stroke-width="2.5"/>
+          <line x1="328" y1="190" x2="328" y2="242" stroke="#fff" stroke-width="2.5"/>
+          <circle cx="328" cy="190" r="6" fill="#ff4f1f" stroke="#fff" stroke-width="2"/>
         </svg>
         <div class="readout">
           <div><span class="mono">Knee Flexion</span><b><span id="deg">0</span><small>°</small></b></div>
@@ -808,7 +808,7 @@ document.querySelectorAll('.rv,#steps').forEach(el=>io.observe(el));
 
 /* ---------- ROM gauge ---------- */
 (()=>{const arc=document.getElementById('romArc'),ln=document.getElementById('romLine'),deg=document.getElementById('deg');
-const cx=250,cy=250,r=92;let t=0;
+const cx=328,cy=190,r=52;let t=0;
 function pt(a){const rad=(a-90)*Math.PI/180;return [cx+r*Math.cos(rad),cy+r*Math.sin(rad)]}
 function draw(a){const [x,y]=pt(a);const large=a>180?1:0;arc.setAttribute('d',`M${cx} ${cy-r} A${r} ${r} 0 ${large} 1 ${x.toFixed(1)} ${y.toFixed(1)}`);ln.setAttribute('x2',x.toFixed(1));ln.setAttribute('y2',y.toFixed(1));deg.textContent=Math.round(a)}
 function loop(){t+=.012;const a=67.5*(1-Math.cos(t));draw(Math.max(.5,a));requestAnimationFrame(loop)}
